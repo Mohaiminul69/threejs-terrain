@@ -5,9 +5,9 @@ import * as dat from "dat.gui";
 
 // * Texture Loader
 const loader = new THREE.TextureLoader();
-const height = loader.load("height.png");
+const height = loader.load("height2.png");
 const texture = loader.load("../texture.jpg");
-const alpha = loader.load("../");
+const alpha = loader.load("../alpha.png");
 
 // Debug
 const gui = new dat.GUI();
@@ -26,6 +26,11 @@ const geometry = new THREE.PlaneBufferGeometry(3, 3, 64, 64);
 const material = new THREE.MeshStandardMaterial({
   color: "grey",
   map: texture,
+  displacementMap: height,
+  displacementScale: 1,
+  alphaMap: alpha,
+  transparent: true,
+  depthTest: false,
 });
 // material.color = new THREE.Color(0xff0000)
 
@@ -39,10 +44,10 @@ gui.add(plane.rotation, "x").min(0).max(600);
 
 // Lights
 
-const pointLight = new THREE.PointLight(0xffffff, 2);
-pointLight.position.x = 2;
-pointLight.position.y = 3;
-pointLight.position.z = 4;
+const pointLight = new THREE.PointLight("#00b3ff", 3);
+pointLight.position.x = 0.2;
+pointLight.position.y = 10;
+pointLight.position.z = 4.4;
 scene.add(pointLight);
 
 gui.add(pointLight.position, "x");
@@ -58,13 +63,13 @@ gui.addColor(col, "color").onChange(() => {
  * Sizes
  */
 const sizes = {
-  width: window.innerWidth,
+  width: window.innerWidth * 0.7,
   height: window.innerHeight,
 };
 
 window.addEventListener("resize", () => {
   // Update sizes
-  sizes.width = window.innerWidth;
+  sizes.width = window.innerWidth * 0.7;
   sizes.height = window.innerHeight;
 
   // Update camera
@@ -95,18 +100,25 @@ scene.add(camera);
 // const controls = new OrbitControls(camera, canvas)
 // controls.enableDamping = true
 
-/**
+/*
  * Renderer
  */
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
+  alpha: true,
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-/**
+/*
  * Animate
  */
+
+let mouseY = 0;
+const animateTerrain = (e) => {
+  mouseY = e.clientY;
+};
+document.addEventListener("mousemove", animateTerrain);
 
 const clock = new THREE.Clock();
 
@@ -114,7 +126,8 @@ const tick = () => {
   const elapsedTime = clock.getElapsedTime();
 
   // Update objects
-  //   sphere.rotation.y = 0.5 * elapsedTime;
+  plane.rotation.z = 0.5 * elapsedTime;
+  plane.material.displacementScale = 0.3 + mouseY * 0.0008;
 
   // Update Orbital Controls
   // controls.update()
